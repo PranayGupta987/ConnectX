@@ -5,6 +5,7 @@ import { logger } from "../utils/logger.js";
 import { User } from "../models/User.js";
 import { chatService } from "../services/chat.service.js";
 import { callService } from "../services/call.service.js";
+import { env } from "../config/env.js";
 
 /** @type {import('socket.io').Server | null} */
 let ioRef = null;
@@ -57,7 +58,12 @@ async function broadcastPresence(userId, isOnline) {
 
 export function initSocket(httpServer) {
   const io = new Server(httpServer, {
-    cors: { origin: corsOptions.origin, credentials: true },
+    cors: {
+      origin: env.CORS_ORIGINS,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    },
     pingTimeout: 30_000,
     pingInterval: 25_000,
   });
