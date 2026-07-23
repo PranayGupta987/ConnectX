@@ -53,8 +53,41 @@ export function CallOverlay() {
 
   useEffect(() => {
     if (!visible) return;
-    if (localRef.current) localRef.current.srcObject = getLocalStream();
-    if (remoteRef.current) remoteRef.current.srcObject = getRemoteStream();
+    
+    // Set streams immediately if available
+    const localStream = getLocalStream();
+    const remoteStream = getRemoteStream();
+    
+    if (localRef.current) {
+      localRef.current.srcObject = localStream;
+      localRef.current.play().catch(() => {});
+    }
+    if (remoteRef.current) {
+      remoteRef.current.srcObject = remoteStream;
+      remoteRef.current.play().catch(() => {});
+    }
+    
+    // Poll for streams if not yet available (handles async stream acquisition)
+    const interval = setInterval(() => {
+      const currentLocal = getLocalStream();
+      const currentRemote = getRemoteStream();
+      
+      if (localRef.current && currentLocal && localRef.current.srcObject !== currentLocal) {
+        localRef.current.srcObject = currentLocal;
+        localRef.current.play().catch(() => {});
+      }
+      if (remoteRef.current && currentRemote && remoteRef.current.srcObject !== currentRemote) {
+        remoteRef.current.srcObject = currentRemote;
+        remoteRef.current.play().catch(() => {});
+      }
+      
+      // Clear interval when both streams are set
+      if (localRef.current?.srcObject && remoteRef.current?.srcObject) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
   }, [visible, getLocalStream, getRemoteStream, phase]);
 
   useEffect(() => {
