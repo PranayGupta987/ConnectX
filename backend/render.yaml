@@ -26,7 +26,7 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 30d
       - key: CORS_ORIGINS
-        sync: false
+        sync: https://connect-x-nu.vercel.app/
       - key: COOKIE_DOMAIN
         sync: false
       - key: COOKIE_SECURE
